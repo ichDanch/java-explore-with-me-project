@@ -1,15 +1,51 @@
 version: '3.1'
 services:
-  stats-server:
+  stat-service:
     ports:
       - "9090:9090"
+    build: ./stat-service
+    container_name: stat-service
+    depends_on:
+      - stat-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stat-db:5432/explorewithmestat
+      - POSTGRES_USER=Danila
+      - POSTGRES_PASSWORD=Danila
 
-  stats-db:
+  stat-db:
     image: postgres:14-alpine
+    container_name: stat-db
+    ports:
+      - "6540:5432"
+    volumes:
+      - /var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=explorewithmestat
+      - POSTGRES_USER=Danila
+      - POSTGRES_PASSWORD=Danila
 
-  ewm-service:
+  main-service:
+    build: ./main-service
+    container_name: main-service
+    depends_on:
+      - main-db
+      - stat-service
     ports:
       - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5432/explorewithmemain
+      - POSTGRES_USER=Danila
+      - POSTGRES_PASSWORD=Danila
+      - stat_service_url=http://stat-service:9090
 
-  ewm-db:
+  main-db:
     image: postgres:14-alpine
+    container_name: main-db
+    ports:
+      - "6541:5432"
+    volumes:
+      - /var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=explorewithmemain
+      - POSTGRES_USER=Danila
+      - POSTGRES_PASSWORD=Danila
