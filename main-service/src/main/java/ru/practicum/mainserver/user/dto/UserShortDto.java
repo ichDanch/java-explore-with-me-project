@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import ru.practicum.mainserver.validation.CreateValidation;
 import ru.practicum.mainserver.validation.UpdateValidation;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -21,7 +20,4 @@ public class UserShortDto {
     @NotNull(groups = {CreateValidation.class, UpdateValidation.class})
     @NotBlank(groups = {CreateValidation.class, UpdateValidation.class}, message = "Name must not be blank")
     private String name;
-    @Email(message = "Email should be valid")
-    @NotNull(groups = {CreateValidation.class, UpdateValidation.class})
-    private String email;
 }

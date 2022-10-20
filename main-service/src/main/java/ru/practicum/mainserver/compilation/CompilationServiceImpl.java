@@ -97,16 +97,9 @@ public class CompilationServiceImpl {
         return CompilationMapper.toDto(savedCompilation);
     }
 
-    public CompilationDto unpinCompilation(Long compId) {
+    public CompilationDto pinOrUnpinCompilation(Long compId, boolean pin) {
         Compilation compilation = getCompilation(compId);
-        compilation.setPinned(false);
-        Compilation savedCompilation = compilationRepository.save(compilation);
-        return CompilationMapper.toDto(savedCompilation);
-    }
-
-    public CompilationDto pinCompilation(Long compId) {
-        Compilation compilation = getCompilation(compId);
-        compilation.setPinned(true);
+        compilation.setPinned(pin);
         Compilation savedCompilation = compilationRepository.save(compilation);
         return CompilationMapper.toDto(savedCompilation);
     }
@@ -119,6 +112,7 @@ public class CompilationServiceImpl {
         List<EventShortDto> eventShortDtos = compilationDto.getEvents()
                 .stream()
                 .map(eventService::setConfirmedRequestsEventShortDto)
+                .map(eventService::setViewsEventShortDto)
                 .collect(Collectors.toList());
         compilationDto.setEvents(eventShortDtos);
         return compilationDto;

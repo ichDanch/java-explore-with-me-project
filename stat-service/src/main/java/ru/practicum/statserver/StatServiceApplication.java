@@ -1,14 +1,13 @@
-package ru.practicum.mainserver;
+package ru.practicum.statserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-
 @SpringBootApplication
-public class MainServerApplication {
+public class StatServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MainServerApplication.class, args);
+        SpringApplication.run(StatServiceApplication.class, args);
     }
 
 }

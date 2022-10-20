@@ -44,6 +44,8 @@ public class BaseClient {
         try {
             if (parameters != null) {
                 responseEntity = rest.exchange(path, method, requestEntity, Object.class, parameters);
+                System.out.println(responseEntity);
+                System.out.println(responseEntity);
             } else {
                 responseEntity = rest.exchange(path, method, requestEntity, Object.class);
             }

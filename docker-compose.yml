@@ -29,7 +29,6 @@ services:
     container_name: main-service
     depends_on:
       - main-db
-      - stat-service
     ports:
       - "8080:8080"
     environment:

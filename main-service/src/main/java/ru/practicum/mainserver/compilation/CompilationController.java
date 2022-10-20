@@ -86,7 +86,7 @@ public class CompilationController {
      */
     @DeleteMapping("/admin/compilations/{compId}/pin")
     public CompilationDto unpinCompilationMainPage(@PathVariable Long compId) {
-        return compilationService.unpinCompilation(compId);
+        return compilationService.pinOrUnpinCompilation(compId, false);
     }
 
     /**
@@ -94,6 +94,6 @@ public class CompilationController {
      */
     @PatchMapping("/admin/compilations/{compId}/pin")
     public CompilationDto pinCompilationMainPage(@PathVariable Long compId) {
-        return compilationService.pinCompilation(compId);
+        return compilationService.pinOrUnpinCompilation(compId, true);
     }
 }

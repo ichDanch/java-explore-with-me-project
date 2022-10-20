@@ -1,10 +1,10 @@
-package ru.practicum.mainserver;
+package ru.practicum.statserver;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MainServerApplicationTests {
+class StatServiceApplicationTests {
 
     @Test
     void contextLoads() {

@@ -51,7 +51,53 @@ public class EventServiceImpl {
         this.statsClient = statsClient;
     }
 
-    public List<EventShortDto> findAllEvents(
+    public List<EventShortDto> findAllEvents(String text, Set<Long> categories, Boolean paid, LocalDateTime rangeStart,
+                                             LocalDateTime rangeEnd, Boolean onlyAvailable, EventSort sort,
+                                             Integer from, Integer size, HttpServletRequest request) {
+        if (rangeStart == null) {
+            rangeStart = LocalDateTime.now();
+        }
+        if (rangeEnd == null) {
+            rangeEnd = LocalDateTime.MAX;
+        }
+        Pageable page = PageRequest.of(from / size, size, Sort.by("id"));
+
+        List<Event> events = eventRepository.findAllEvents(text, categories, paid, rangeStart, rangeEnd, page)
+                .stream()
+                .collect(Collectors.toList());
+
+        if (sort == EventSort.EVENT_DATE) {
+            events = events.stream()
+                    .sorted(Comparator.comparing(Event::getEventDate))
+                    .collect(Collectors.toList());
+        }
+
+        List<EventShortDto> eventShortDtos = events.stream()
+                .filter(event -> event.getState() == EventState.PUBLISHED)
+                .map(EventMapper::toShortDto)
+                .map(this::setConfirmedRequestsEventShortDto)
+                .map(this::setViewsEventShortDto)
+                .collect(Collectors.toList());
+
+        if (sort == EventSort.VIEW) {
+            eventShortDtos = eventShortDtos.stream()
+                    .sorted(Comparator.comparing(EventShortDto::getViews))
+                    .collect(Collectors.toList());
+        }
+
+        if (onlyAvailable) {
+            eventShortDtos = eventShortDtos.stream()
+                    .filter(eventShortDto ->
+                            eventShortDto.getConfirmedRequests() <= getEvent(eventShortDto.getId()).getParticipantLimit())
+                    .collect(Collectors.toList());
+        }
+
+        createEndpointHit(request);
+
+        return eventShortDtos;
+    }
+
+   /* public List<EventShortDto> findAllEvents(
             String text, Set<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd,
             Boolean onlyAvailable, EventSort sort, Integer from, Integer size, HttpServletRequest request) {
 
@@ -104,7 +150,7 @@ public class EventServiceImpl {
                     .map(this::setViewsEventShortDto)
                     .collect(Collectors.toList());
         }
-    }
+    }*/
 
     public EventFullDto findEventById(Long eventId, HttpServletRequest request) {
         Event event = getEvent(eventId);

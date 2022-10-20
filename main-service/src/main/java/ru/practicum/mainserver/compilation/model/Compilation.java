@@ -6,13 +6,13 @@ import ru.practicum.mainserver.event.model.Event;
 import javax.persistence.*;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "compilations")
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Compilation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

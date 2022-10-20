@@ -53,7 +53,9 @@ public class StatsClient extends BaseClient {
         );
 
         try {
-            return get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
+            var var =  get("stats?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
+            System.out.println(var);
+            return var;
         } catch (Exception e) {
             log.error("Method [findViewStats] class [StatsClient] Get error: " + e.getMessage());
         }
