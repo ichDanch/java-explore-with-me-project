@@ -5,8 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.mainserver.category.dto.CategoryDto;
+import ru.practicum.mainserver.comment.dto.CommentDtoOut;
 import ru.practicum.mainserver.event.model.Location;
 import ru.practicum.mainserver.user.dto.UserShortDto;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -44,4 +48,6 @@ public class EventFullDto {
     private String title;
 
     private int views;
+    @Builder.Default
+    private List<CommentDtoOut> comments = new ArrayList<>();
 }
