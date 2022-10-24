@@ -12,6 +12,10 @@ import ru.practicum.mainserver.category.CategoryServiceImpl;
 import ru.practicum.mainserver.category.model.Category;
 import ru.practicum.mainserver.client.StatsClient;
 import ru.practicum.mainserver.client.dto.EndpointHit;
+import ru.practicum.mainserver.comment.CommentMapper;
+import ru.practicum.mainserver.comment.CommentRepository;
+import ru.practicum.mainserver.comment.dto.CommentDtoOut;
+import ru.practicum.mainserver.comment.model.Comment;
 import ru.practicum.mainserver.event.EventMapper;
 import ru.practicum.mainserver.event.EventSort;
 import ru.practicum.mainserver.event.Repository.EventRepository;
@@ -28,7 +32,10 @@ import ru.practicum.mainserver.request.model.RequestStatus;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,16 +45,18 @@ public class EventServiceImpl {
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
     private final CategoryServiceImpl categoryService;
+    private final CommentRepository commentRepository;
     private final StatsClient statsClient;
 
     @Autowired
     public EventServiceImpl(EventRepository eventRepository,
                             RequestRepository requestRepository,
                             CategoryServiceImpl categoryService,
-                            StatsClient statsClient) {
+                            CommentRepository commentRepository, StatsClient statsClient) {
         this.eventRepository = eventRepository;
         this.requestRepository = requestRepository;
         this.categoryService = categoryService;
+        this.commentRepository = commentRepository;
         this.statsClient = statsClient;
     }
 
@@ -77,6 +86,7 @@ public class EventServiceImpl {
                 .map(EventMapper::toShortDto)
                 .map(this::setConfirmedRequestsEventShortDto)
                 .map(this::setViewsEventShortDto)
+                .map(this::setCommentsEventShortDto)
                 .collect(Collectors.toList());
 
         if (sort == EventSort.VIEW) {
@@ -97,61 +107,6 @@ public class EventServiceImpl {
         return eventShortDtos;
     }
 
-   /* public List<EventShortDto> findAllEvents(
-            String text, Set<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd,
-            Boolean onlyAvailable, EventSort sort, Integer from, Integer size, HttpServletRequest request) {
-
-        LocalDateTime now = LocalDateTime.now();
-        List<Event> events;
-        Pageable pageWithElements = PageRequest.of(from / size, size, Sort.by("id"));
-
-        if (rangeStart == null || rangeEnd == null) {
-            events = eventRepository
-                    .findAllByAnnotationContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndCategoryIdInAndPaidAndEventDateAfter(
-                            text, text, categories, paid, now, pageWithElements)
-                    .stream()
-                    .collect(Collectors.toList());
-        } else {
-            events = eventRepository
-                    .findAllByAnnotationContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndCategoryIdInAndPaidAndEventDateBetween(
-                            text, text, categories, paid, rangeStart, rangeEnd, pageWithElements)
-                    .stream()
-                    .collect(Collectors.toList());
-        }
-
-        List<EventShortDto> eventShortDtos = new ArrayList<>();
-        for (Event event : events) {
-            EventShortDto shortDto = EventMapper.toShortDto(event);
-            if (event.getParticipantLimit() > 0) {
-                if (onlyAvailable) {
-                    if (shortDto.getConfirmedRequests() < event.getParticipantLimit()) {
-                        eventShortDtos.add(shortDto);
-                    }
-                } else {
-                    eventShortDtos.add(shortDto);
-                }
-            } else {
-                eventShortDtos.add(shortDto);
-            }
-        }
-
-        createEndpointHit(request);
-
-        if (sort == EventSort.EVENT_DATE) {
-            return eventShortDtos.stream()
-                    .sorted(Comparator.comparing(EventShortDto::getViews))
-                    .map(this::setConfirmedRequestsEventShortDto)
-                    .map(this::setViewsEventShortDto)
-                    .collect(Collectors.toList());
-        } else {
-            return eventShortDtos.stream()
-                    .sorted(Comparator.comparing(EventShortDto::getEventDate))
-                    .map(this::setConfirmedRequestsEventShortDto)
-                    .map(this::setViewsEventShortDto)
-                    .collect(Collectors.toList());
-        }
-    }*/
-
     public EventFullDto findEventById(Long eventId, HttpServletRequest request) {
         Event event = getEvent(eventId);
         if (event.getState() != EventState.PUBLISHED) {
@@ -163,6 +118,7 @@ public class EventServiceImpl {
         EventFullDto eventFullDto = EventMapper.toFullDto(event);
         eventFullDto = setConfirmedRequestsEventFullDto(eventFullDto);
         eventFullDto = setViewsEventFullDto(eventFullDto);
+        eventFullDto = setCommentsEventFullDto(eventFullDto);
 
         return eventFullDto;
     }
@@ -193,6 +149,7 @@ public class EventServiceImpl {
         return events.stream()
                 .map(EventMapper::toFullDto)
                 .map(this::setConfirmedRequestsEventFullDto)
+                .map(this::setCommentsEventFullDto)
                 .collect(Collectors.toList());
     }
 
@@ -295,6 +252,22 @@ public class EventServiceImpl {
     public EventFullDto setViewsEventFullDto(EventFullDto eventFullDto) {
         int views = getViews(eventFullDto.getId());
         eventFullDto.setViews(views);
+        return eventFullDto;
+    }
+
+    public EventShortDto setCommentsEventShortDto(EventShortDto eventShortDto) {
+        Long eventId = eventShortDto.getId();
+        List<Comment> comments = commentRepository.findAllByEventId(eventId);
+        List<CommentDtoOut> commentDtoOuts = comments.stream().map(CommentMapper::toDtoOut).collect(Collectors.toList());
+        eventShortDto.setComments(commentDtoOuts);
+        return eventShortDto;
+    }
+
+    public EventFullDto setCommentsEventFullDto(EventFullDto eventFullDto) {
+        Long eventId = eventFullDto.getId();
+        List<Comment> comments = commentRepository.findAllByEventId(eventId);
+        List<CommentDtoOut> commentDtoOuts = comments.stream().map(CommentMapper::toDtoOut).collect(Collectors.toList());
+        eventFullDto.setComments(commentDtoOuts);
         return eventFullDto;
     }
 

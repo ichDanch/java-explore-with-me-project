@@ -1,8 +1,10 @@
 package ru.practicum.mainserver.user.model;
 
 import lombok.*;
+import ru.practicum.mainserver.comment.model.Comment;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Getter
 @Setter
@@ -20,6 +22,8 @@ public class User {
     private String name;
     @Column(name = "email")
     private String email;
+    @OneToMany(mappedBy = "commentator")
+    private List<Comment> comments;
 
 
     @Override

@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS COMPILATIONS_EVENTS, EVENTS, USERS, CATEGORIES, COMPILATIONS, LOCATIONS, REQUESTS;
+DROP TABLE IF EXISTS COMPILATIONS_EVENTS, EVENTS, USERS, CATEGORIES, COMPILATIONS, LOCATIONS, REQUESTS, COMMENT;
 
 CREATE TABLE IF NOT EXISTS USERS
 (
@@ -87,4 +87,19 @@ CREATE TABLE IF NOT EXISTS COMPILATIONS_EVENTS
     event_id       integer not null
         constraint compilations_events_events_id_fk
             references events
+);
+
+CREATE TABLE IF NOT EXISTS COMMENT
+(
+    id             serial
+        constraint comment_pk
+            primary key,
+    text           varchar(1333) not null,
+    commentator_id integer       not null
+        constraint comment_users_id_fk
+            references users,
+    event_id       integer       not null
+        constraint comment_events_id_fk
+            references events,
+    created        timestamp without time zone
 );

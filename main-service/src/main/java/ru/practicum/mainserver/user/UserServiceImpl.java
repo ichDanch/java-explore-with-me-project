@@ -9,6 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.mainserver.category.CategoryServiceImpl;
 import ru.practicum.mainserver.category.model.Category;
+import ru.practicum.mainserver.comment.CommentMapper;
+import ru.practicum.mainserver.comment.CommentRepository;
+import ru.practicum.mainserver.comment.dto.CommentDtoIn;
+import ru.practicum.mainserver.comment.dto.CommentDtoOut;
+import ru.practicum.mainserver.comment.model.Comment;
 import ru.practicum.mainserver.event.EventMapper;
 import ru.practicum.mainserver.event.Repository.EventRepository;
 import ru.practicum.mainserver.event.Service.EventServiceImpl;
@@ -31,6 +36,7 @@ import ru.practicum.mainserver.user.repository.UsersRepository;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,6 +48,7 @@ public class UserServiceImpl {
     private final LocationService locationService;
     private final EventServiceImpl eventService;
     private final RequestRepository requestRepository;
+    private final CommentRepository commentRepository;
 
     @Autowired
     public UserServiceImpl(UsersRepository usersRepository,
@@ -49,13 +56,15 @@ public class UserServiceImpl {
                            EventRepository eventRepository,
                            LocationService locationService,
                            EventServiceImpl eventService,
-                           RequestRepository requestRepository) {
+                           RequestRepository requestRepository,
+                           CommentRepository commentRepository) {
         this.usersRepository = usersRepository;
         this.categoryService = categoryService;
         this.eventRepository = eventRepository;
         this.locationService = locationService;
         this.eventService = eventService;
         this.requestRepository = requestRepository;
+        this.commentRepository = commentRepository;
     }
 
     @Transactional
@@ -203,5 +212,48 @@ public class UserServiceImpl {
         Event savedEvent = eventRepository.save(event);
         EventFullDto eventFullDto = EventMapper.toFullDto(event);
         return eventService.setConfirmedRequestsEventFullDto(eventFullDto);
+    }
+
+    @Transactional
+    public CommentDtoOut createComment(Long userId, Long eventId, CommentDtoIn commentDtoIn) {
+        LocalDateTime now = LocalDateTime.now().withNano(0);
+        User user = getUser(userId);
+        Event event = eventService.getEvent(eventId);
+
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new ValidationException("Event not published yet");
+        }
+        Comment comment = Comment.builder()
+                .text(commentDtoIn.getText())
+                .commentator(user)
+                .event(event)
+                .created(now).build();
+
+        Comment savedComment = commentRepository.save(comment);
+
+        return CommentMapper.toDtoOut(savedComment);
+    }
+
+    @Transactional
+    public CommentDtoOut patchComment(Long userId, Long commentId, CommentDtoIn commentDtoIn) {
+        User user = getUser(userId);
+        Comment comment = getComment(commentId);
+
+        if (!Objects.equals(userId, comment.getId())) {
+            throw new ValidationException("User is not commentator");
+        }
+        comment.setText(commentDtoIn.getText());
+        return CommentMapper.toDtoOut(comment);
+    }
+
+    public void deleteComment(Long userId, Long eventId, Long commentId) {
+        User user = getUser(userId);
+        Event event = eventService.getEvent(eventId);
+        Comment comment = getComment(commentId);
+        commentRepository.delete(comment);
+    }
+
+    public Comment getComment(Long commentId) {
+        return commentRepository.findById(commentId).orElseThrow(() -> new UserNotFoundException(commentId));
     }
 }

@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.mainserver.comment.dto.CommentDtoIn;
+import ru.practicum.mainserver.comment.dto.CommentDtoOut;
 import ru.practicum.mainserver.event.dto.EventFullDto;
 import ru.practicum.mainserver.event.dto.EventShortDto;
 import ru.practicum.mainserver.event.dto.NewEventDto;
@@ -142,6 +144,38 @@ public class UserController {
                                                               @PathVariable Long reqId) {
         return requestService.rejectParticipationRequest(userId, eventId, reqId);
     }
+
+    /**
+     * Создать комментарий
+     */
+    @PostMapping("/users/{userId}/events/{eventId}/comment")
+    public CommentDtoOut createComment(@PathVariable Long userId,
+                                       @PathVariable Long eventId,
+                                       @RequestBody @Valid CommentDtoIn commentDtoIn) {
+        log.info("userId = {}, eventId = {}, commentDtoId = {}", userId, eventId, commentDtoIn);
+        return userService.createComment(userId, eventId, commentDtoIn);
+    }
+
+    /**
+     * Создать комментарий
+     */
+    @PatchMapping("/users/{userId}/events/{eventId}/comment/{commentId}")
+    public CommentDtoOut patchComment(@PathVariable long userId,
+                                      @PathVariable long commentId,
+                                      @RequestBody @Valid CommentDtoIn commentDtoIn) {
+        return userService.patchComment(userId, commentId, commentDtoIn);
+    }
+
+    /**
+     * Удалить комментарий
+     */
+    @DeleteMapping("/users/{userId}/events/{eventId}/comment/{commentId}")
+    public void deleteComment(@PathVariable long userId,
+                              @PathVariable long eventId,
+                              @PathVariable long commentId) {
+        userService.deleteComment(userId, eventId, commentId);
+    }
+
 
     /**
      Private: Запросы на участие
