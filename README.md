@@ -21,6 +21,15 @@ Pull request link: https://github.com/ichDanch/java-explore-with-me-project/pull
  - закрытая, доступна только авторизованным пользователям.  
  - административная, для администраторов сервиса.
 
+##### Спецификация API
+- спецификация основного сервиса:  [ewm-main-service-spec.json](https://raw.githubusercontent.com/yandex-praktikum/java-explore-with-me/main/ewm-main-service-spec.json)
+- спецификация сервиса статистики: [ewm-stats-service-spec.json](https://raw.githubusercontent.com/yandex-praktikum/java-explore-with-me/main/ewm-stats-service-spec.json)  
+Для работы со спецификациями понадобится редактор [Swagger](https://editor-next.swagger.io/). Чтобы просмотреть спецификацию в редакторе, необходимо выполнить ряд шагов:
+      - Скопировать ссылку на файл спецификации
+      - Открыть онлайн-версию редактора Swagger. На верхней панели выбрать меню File, затем пункт Import URL
+      - Вставить скопированную ссылку в текстовое поле появившегося диалогового окна и нажать OK
+
+
 ##### Жизненный цикл события состоит из нескольких этапов:
 - создание
 - ожидание публикации (статус ожидания публикации событие переходит сразу после создания)
